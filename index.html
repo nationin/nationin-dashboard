@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NationIn · 6-Month Marketing Dashboard</title>
+  <meta name="description" content="Nation Innovation 6-month social media & YouTube monetization dashboard (May–Oct 2026)." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23EA580C%22/><text x=%2250%22 y=%2268%22 font-size=%2260%22 font-family=%22sans-serif%22 font-weight=%22800%22 text-anchor=%22middle%22 fill=%22white%22>N</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { margin: 0; padding: 0; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background: #F0F4F8; }
+    #root { min-height: 100vh; }
+    .__loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui, sans-serif; color: #475569; font-size: 16px; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #E2E8F0; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div id="root"><div class="__loading">Loading NationIn dashboard…</div></div>
+
+  <script>
+    // NO JSX - Pure JavaScript React
+    const { useState, useMemo } = React;
+    
+    // ===== DATA =====
+    const CHANNELS = {
+      youtube:   { label: "YouTube",      color: "#DC2626", bg: "#DC262612", icon: "▶" },
+      instagram: { label: "Instagram",    color: "#C2185B", bg: "#C2185B12", icon: "◈" },
+      linkedin:  { label: "LinkedIn",     color: "#0369A1", bg: "#0369A112", icon: "in" },
+      whatsapp:  { label: "WhatsApp",     color: "#16A34A", bg: "#16A34A12", icon: "◎" },
+      facebook:  { label: "Facebook",     color: "#2563EB", bg: "#2563EB12", icon: "f" },
+      threads:   { label: "Threads",      color: "#7C3AED", bg: "#7C3AED12", icon: "@" },
+      x:         { label: "X / Twitter",  color: "#334155", bg: "#33415512", icon: "𝕏" },
+      community: { label: "NI Community", color: "#EA580C", bg: "#EA580C12", icon: "⬡" },
+    };
+
+    const PHASES = [
+      { id: 1, name: "Fix & Activate",   months: [5, 6],  color: "#EA580C" },
+      { id: 2, name: "Grow & Engage",    months: [7, 8],  color: "#059669" },
+      { id: 3, name: "Scale & Monetise", months: [9, 10], color: "#2563EB" },
+    ];
+
+    const WEEKLY_TASKS = {
+      1: [
+        { id: "m1", channel: "instagram", task: "Post carousel — course tip or industry insight",                        type: "post",       priority: "high" },
+        { id: "m2", channel: "linkedin",  task: "Post placement story",                                                  type: "post",       priority: "high" },
+        { id: "m3", channel: "threads",   task: "Repurpose same carousel as Threads text + image",                       type: "repurpose",  priority: "medium" },
+      ],
+      2: [
+        { id: "t1", channel: "youtube",   task: "Upload long-form tutorial (10–15 min) with affiliate + course links",   type: "upload",     priority: "high" },
+        { id: "t2", channel: "youtube",   task: "Upload Short — 30s clip from today's long-form",                        type: "short",      priority: "high" },
+        { id: "t3", channel: "x",         task: "Live commentary + teasers for new YouTube video",                       type: "post",       priority: "medium" },
+      ],
+      3: [
+        { id: "w1", channel: "instagram", task: "Post Reel — student win or placement story",                            type: "reel",       priority: "high" },
+        { id: "w2", channel: "linkedin",  task: "Send NI TechTalk newsletter edition",                                   type: "newsletter", priority: "high" },
+        { id: "w3", channel: "whatsapp",  task: "Broadcast — mid-week tip or flash offer",                               type: "broadcast",  priority: "medium" },
+      ],
+      4: [
+        { id: "th1", channel: "youtube",  task: "Upload Short — 'Did you know?' electronics fact",                       type: "short",      priority: "high" },
+        { id: "th2", channel: "instagram",task: "Post Reel — behind the lab / trainer spotlight",                        type: "reel",       priority: "high" },
+        { id: "th3", channel: "facebook", task: "Boost best-performing post (Rs 300 budget)",                            type: "boost",      priority: "medium" },
+      ],
+      5: [
+        { id: "f1", channel: "youtube",   task: "Upload long-form — concept/career explainer (8–12 min)",                type: "upload",     priority: "high" },
+        { id: "f2", channel: "instagram", task: "Post carousel — '5 things about...' format",                            type: "post",       priority: "high" },
+        { id: "f3", channel: "whatsapp",  task: "Broadcast — weekend project challenge link",                            type: "broadcast",  priority: "medium" },
+      ],
+      6: [
+        { id: "sa1", channel: "youtube",  task: "LIVE: 'Ask the Trainer' session (45–60 min) — Super Chats on!",         type: "live",       priority: "critical" },
+        { id: "sa2", channel: "facebook", task: "Mirror YouTube Live on Facebook Live simultaneously",                   type: "live",       priority: "high" },
+        { id: "sa3", channel: "community",task: "Post replay link in all WhatsApp groups + NI Community",                type: "post",       priority: "medium" },
+      ],
+      0: [
+        { id: "su1", channel: "youtube",  task: "Upload Short — motivation / career path content",                       type: "short",      priority: "high" },
+        { id: "su2", channel: "instagram",task: "Post Story — upcoming week preview + batch countdown",                  type: "story",      priority: "medium" },
+        { id: "su3", channel: "whatsapp", task: "Broadcast — weekly wrap + batch CTA",                                   type: "broadcast",  priority: "medium" },
+      ],
+    };
+
+    const MONTH_MILESTONES = {
+      5: [
+        { day: 1,  channel: "youtube",   task: "Audit channel — privatise low-effort old videos",                        type: "milestone", priority: "critical" },
+        { day: 1,  channel: "youtube",   task: "Create 5 playlists: ML, IoT, VLSI, DIY, Career",                         type: "milestone", priority: "critical" },
+        { day: 1,  channel: "youtube",   task: "Apply to YPP via YouTube Studio Earn tab. Set up AdSense.",              type: "milestone", priority: "critical" },
+        { day: 1,  channel: "x",         task: "URGENT: Rename @supportNationin → @NationInnovation",                    type: "milestone", priority: "critical" },
+        { day: 1,  channel: "instagram", task: "Switch to carousel-first strategy (2 carousels + 2 Reels/week)",         type: "milestone", priority: "high" },
+        { day: 1,  channel: "linkedin",  task: "Activate NI TechTalk newsletter — publish first edition",               type: "milestone", priority: "high" },
+        { day: 3,  channel: "instagram", task: "Film student testimonial Reel: Manisha (Cisco)",                         type: "milestone", priority: "high" },
+        { day: 5,  channel: "instagram", task: "Film student testimonial Reel: Deepak (BlockDeep Labs)",                 type: "milestone", priority: "high" },
+        { day: 7,  channel: "instagram", task: "Film student testimonial Reel: Ashwini (NIH)",                           type: "milestone", priority: "high" },
+        { day: 7,  channel: "youtube",   task: "Add Robu.in + Amazon affiliate links to top 20 videos",                  type: "milestone", priority: "high" },
+        { day: 7,  channel: "community", task: "Launch WhatsApp Broadcast channel — share join link everywhere",         type: "milestone", priority: "high" },
+        { day: 10, channel: "instagram", task: "Update link-in-bio → webinar signup page (not homepage)",                type: "milestone", priority: "high" },
+        { day: 10, channel: "youtube",   task: "Enable mid-roll ads on all YouTube videos 8+ minutes",                   type: "milestone", priority: "high" },
+        { day: 14, channel: "youtube",   task: "Add UTM parameters to all social bio links",                             type: "milestone", priority: "high" },
+        { day: 20, channel: "youtube",   task: "Post trainer introduction video (Mr. Saurabh Singh)",                    type: "milestone", priority: "medium" },
+      ],
+      6: [
+        { day: 1,  channel: "youtube",   task: "YPP should be approved — turn on ads for all eligible videos",           type: "milestone", priority: "critical" },
+        { day: 1,  channel: "youtube",   task: "Enable Super Thanks on all videos",                                      type: "milestone", priority: "high" },
+        { day: 7,  channel: "community", task: "Launch WhatsApp Community: 'NI Learners', 'Projects & Doubts', 'Job Alerts'", type: "milestone", priority: "critical" },
+        { day: 7,  channel: "youtube",   task: "Publish first 3 long-form tutorials targeting high-search keywords",     type: "milestone", priority: "high" },
+        { day: 10, channel: "instagram", task: "Run first giveaway — free DIY kit (tag 2 friends + follow). Target +3K followers.", type: "milestone", priority: "high" },
+        { day: 14, channel: "facebook",  task: "Start weekly Facebook Live sessions synced with YouTube",                type: "milestone", priority: "medium" },
+        { day: 14, channel: "linkedin",  task: "Begin InMail outreach to 10 college TPOs for bulk enrolment",           type: "milestone", priority: "high" },
+        { day: 21, channel: "community", task: "Launch NI Ambassador program at 5 pilot colleges",                       type: "milestone", priority: "high" },
+      ],
+      7: [
+        { day: 1,  channel: "youtube",   task: "Hit 1,000+ subs — Launch Channel Memberships (Rs 99/299/499 tiers)",    type: "milestone", priority: "critical" },
+        { day: 1,  channel: "youtube",   task: "Approach first electronics brand sponsor (Robu.in, SB Components, PCBWay)", type: "milestone", priority: "high" },
+        { day: 7,  channel: "instagram", task: "Launch 'NI Build Challenge' — weekly hashtag campaign with DIY kit prize", type: "milestone", priority: "high" },
+        { day: 14, channel: "instagram", task: "Collab post with micro-influencer #1 (ECE/tech education niche)",        type: "milestone", priority: "high" },
+        { day: 21, channel: "instagram", task: "Collab post with micro-influencer #2 (ECE/tech education niche)",        type: "milestone", priority: "high" },
+        { day: 14, channel: "community", task: "Seed community discussions daily. Launch 'Project Showcase' competition.", type: "milestone", priority: "medium" },
+      ],
+      8: [
+        { day: 1,  channel: "instagram", task: "Launch Meta ads — Rs 500/day targeting engineering students 18–26 Tier 1+2 cities", type: "milestone", priority: "critical" },
+        { day: 1,  channel: "linkedin",  task: "Launch LinkedIn Sponsored Content — Rs 400/day targeting HR + TPOs",    type: "milestone", priority: "high" },
+        { day: 7,  channel: "youtube",   task: "Close first brand sponsorship deal (target Rs 10–25K)",                  type: "milestone", priority: "critical" },
+        { day: 7,  channel: "youtube",   task: "Add YouTube Shopping to 10 DIY videos",                                  type: "milestone", priority: "high" },
+        { day: 7,  channel: "youtube",   task: "Start 'Summer Internship' 3-part video series",                          type: "milestone", priority: "high" },
+        { day: 14, channel: "community", task: "Build 7-email drip: webinar signup → course upsell → DIY kit → testimonial ask", type: "milestone", priority: "high" },
+        { day: 14, channel: "community", task: "Launch exclusive 'NI Pro' group for paid members",                       type: "milestone", priority: "medium" },
+        { day: 21, channel: "whatsapp",  task: "Scale to 700+ members. Launch 'Refer & Earn' — refer 3 friends for free material", type: "milestone", priority: "high" },
+      ],
+      9: [
+        { day: 1,  channel: "youtube",   task: "Achieve 5,000+ subscribers — Begin Shorts monetization payments",        type: "milestone", priority: "critical" },
+        { day: 1,  channel: "youtube",   task: "Increase cadence: 5 Shorts/week + 3 long-form/week",                    type: "milestone", priority: "high" },
+        { day: 7,  channel: "youtube",   task: "Explore auto-dubbing in Tamil, Telugu, Malayalam for South India",       type: "milestone", priority: "medium" },
+        { day: 7,  channel: "instagram", task: "30K+ followers — Launch 'Student of the Month' series with placement stats", type: "milestone", priority: "high" },
+        { day: 14, channel: "linkedin",  task: "1,000+ company followers — Post 3 signed B2B contracts as social proof",type: "milestone", priority: "high" },
+        { day: 14, channel: "linkedin",  task: "Post 'NI Hiring Board' weekly — jobs for NI alumni",                    type: "milestone", priority: "medium" },
+      ],
+      10: [
+        { day: 1,  channel: "youtube",   task: "Target 10,000 subscribers — Activate Merchandise shelf for DIY bundles", type: "milestone", priority: "critical" },
+        { day: 1,  channel: "youtube",   task: "Close 2–3 brand deals/month at Rs 20–40K each",                          type: "milestone", priority: "critical" },
+        { day: 7,  channel: "instagram", task: "35K+ followers — Semester-start enrollment campaign (Sep–Oct)",          type: "milestone", priority: "high" },
+        { day: 14, channel: "community", task: "NI Community 1,000+ members. WhatsApp 1,000+ members.",                 type: "milestone", priority: "high" },
+        { day: 14, channel: "community", task: "Monthly free webinar exclusively for community members (lead magnet)",   type: "milestone", priority: "high" },
+        { day: 21, channel: "community", task: "Full UTM audit — identify which channel drives most enrolments",         type: "milestone", priority: "critical" },
+        { day: 28, channel: "community", task: "Present 6-month results deck. Plan next quarter strategy.",              type: "milestone", priority: "critical" },
+      ],
+    };
+
+    const MONTHS = [
+      { num: 5,  name: "May",       year: 2026, phase: 1 },
+      { num: 6,  name: "June",      year: 2026, phase: 1 },
+      { num: 7,  name: "July",      year: 2026, phase: 2 },
+      { num: 8,  name: "August",    year: 2026, phase: 2 },
+      { num: 9,  name: "September", year: 2026, phase: 3 },
+      { num: 10, name: "October",   year: 2026, phase: 3 },
+    ];
+
+    const KPIS = [
+      { label: "Instagram Followers", current: "22K",     target: "35K" },
+      { label: "YouTube Subscribers", current: "0",       target: "10K" },
+      { label: "WhatsApp Members",    current: "0",       target: "1,000+" },
+      { label: "NI Community",        current: "98",      target: "1,000+" },
+      { label: "Monthly Revenue",     current: "—",       target: "Rs 2–5L" },
+      { label: "YPP Monetization",    current: "Pending", target: "Month 2" },
+    ];
+
+    const T = {
+      pageBg:    "#F0F4F8",
+      headerBg:  "#FFFFFF",
+      cardBg:    "#FFFFFF",
+      cardBg2:   "#F8FAFC",
+      border:    "#E2E8F0",
+      text:      "#0F172A",
+      textSub:   "#475569",
+      textMuted: "#94A3B8",
+    };
+
+    function getDaysInMonth(m, y) { return new Date(y, m, 0).getDate(); }
+    function getFirstDay(m, y) { return new Date(y, m - 1, 1).getDay(); }
+
+    // ===== COMPONENT =====
+    function NationInDashboard() {
+      const [selectedMonth, setSelectedMonth] = useState(5);
+      const [selectedDay, setSelectedDay] = useState(null);
+      const [view, setView] = useState("calendar");
+
+      const monthInfo = MONTHS.find(m => m.num === selectedMonth);
+      const phase = PHASES.find(p => p.id === monthInfo.phase);
+      const daysInMo = getDaysInMonth(selectedMonth, 2026);
+      const firstDay = getFirstDay(selectedMonth, 2026);
+      const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+      const getTasksForDay = (day) => {
+        const dow = new Date(2026, selectedMonth - 1, day).getDay();
+        return [
+          ...(MONTH_MILESTONES[selectedMonth] || []).filter(m => m.day === day),
+          ...(WEEKLY_TASKS[dow] || []),
+        ];
+      };
+
+      const dayInfo = (day) => {
+        const ts = getTasksForDay(day);
+        return { n: ts.length };
+      };
+
+      return React.createElement('div',
+        { style: { fontFamily: "'DM Sans', sans-serif", background: T.pageBg, minHeight: "100vh", color: T.text } },
+        
+        // STYLES
+        React.createElement('style', null, `
+          * { box-sizing: border-box; }
+          body { font-family: 'DM Sans', sans-serif; }
+          .header { background: ${T.headerBg}; border-bottom: 1px solid ${T.border}; padding: 18px 28px; box-shadow: 0 1px 6px rgba(15,23,42,.06); }
+          .header-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+          .logo-section { display: flex; align-items: center; gap: 10px; }
+          .logo-icon { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg,#EA580C,#FB923C); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: #fff; box-shadow: 0 3px 10px #EA580C55; }
+          h1 { font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+          .subtitle { font-size: 12px; color: ${T.textMuted}; margin: 0; }
+          .content { max-width: 1200px; margin: 0 auto; padding: 28px; }
+          .card { background: ${T.cardBg}; border-radius: 16px; border: 1px solid ${T.border}; overflow: hidden; box-shadow: 0 1px 6px rgba(15,23,42,.05); }
+          .button { padding: 8px 18px; border-radius: 9px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.14s ease; }
+          .button:hover { filter: brightness(0.95); }
+          .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 20px; }
+          .day-cell { aspect-ratio: 1; border: 1px solid ${T.border}; border-radius: 8px; padding: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.14s ease; font-weight: 700; }
+          .day-cell:hover { background: #EFF6FF; transform: scale(1.04); }
+          .month-nav { padding: 20px; border-bottom: 1px solid ${T.border}; display: flex; justify-content: space-between; align-items: center; }
+          .month-buttons { display: flex; gap: 8px; }
+          .month-btn { padding: 6px 10px; border-radius: 6px; border: none; font-size: 11px; font-weight: 600; cursor: pointer; }
+        `),
+
+        // HEADER
+        React.createElement('div', { className: 'header' },
+          React.createElement('div', { className: 'header-inner' },
+            React.createElement('div', null,
+              React.createElement('div', { className: 'logo-section' },
+                React.createElement('div', { className: 'logo-icon' }, 'N'),
+                React.createElement('span', { style: { fontFamily: "'Space Mono', monospace", fontSize: 11, color: T.textMuted, letterSpacing: 2 } }, 'NATION INNOVATION')
+              ),
+              React.createElement('h1', null, '6-Month Marketing Dashboard'),
+              React.createElement('p', { className: 'subtitle' }, 'May 2026 – October 2026 · nationin.com')
+            ),
+            React.createElement('div', { style: { display: 'flex', gap: 8 } },
+              [['calendar','📅 Calendar'],['kpi','📊 KPIs & Budget']].map(([v, lbl]) =>
+                React.createElement('button', {
+                  key: v,
+                  className: 'button',
+                  onClick: () => setView(v),
+                  style: {
+                    color: view === v ? '#fff' : T.textSub,
+                    background: view === v ? phase.color : 'transparent'
+                  }
+                }, lbl)
+              )
+            )
+          )
+        ),
+
+        // CONTENT
+        React.createElement('div', { className: 'content' },
+          view === 'calendar' ? (
+            React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28 } },
+              // CALENDAR
+              React.createElement('div', { className: 'card' },
+                React.createElement('div', { className: 'month-nav' },
+                  React.createElement('h2', { style: { fontSize: 14, fontWeight: 700, margin: 0 } }, monthInfo.name + ' 2026'),
+                  React.createElement('div', { className: 'month-buttons' },
+                    MONTHS.map(m =>
+                      React.createElement('button', {
+                        key: m.num,
+                        className: 'month-btn',
+                        onClick: () => setSelectedMonth(m.num),
+                        style: {
+                          color: selectedMonth === m.num ? '#fff' : T.textSub,
+                          background: selectedMonth === m.num ? PHASES.find(p => p.id === m.phase).color : 'transparent'
+                        }
+                      }, m.name.slice(0, 3))
+                    )
+                  )
+                ),
+                React.createElement('div', { className: 'calendar-grid' },
+                  DAY_NAMES.map(d =>
+                    React.createElement('div', { key: d, style: { textAlign: 'center', fontSize: 11, fontWeight: 600, color: T.textMuted } }, d)
+                  ),
+                  Array(firstDay).fill(null).map((_, i) =>
+                    React.createElement('div', { key: 'e' + i })
+                  ),
+                  Array(daysInMo).fill(null).map((_, i) => {
+                    const day = i + 1;
+                    const info = dayInfo(day);
+                    return React.createElement('button', {
+                      key: day,
+                      className: 'day-cell',
+                      onClick: () => setSelectedDay(selectedDay === day ? null : day),
+                      style: {
+                        background: selectedDay === day ? phase.color + '11' : T.cardBg,
+                        border: '1px solid ' + (selectedDay === day ? phase.color : T.border)
+                      }
+                    }, 
+                      React.createElement('div', null, day),
+                      info.n > 0 && React.createElement('div', { style: { fontSize: 9, color: T.textMuted } }, '+' + info.n)
+                    );
+                  })
+                )
+              ),
+
+              // DAY DETAILS
+              selectedDay && React.createElement('div', { className: 'card' },
+                React.createElement('div', {
+                  style: {
+                    padding: 20,
+                    background: `linear-gradient(135deg,${phase.color},${phase.color}cc)`,
+                    color: '#fff'
+                  }
+                },
+                  React.createElement('h3', { style: { margin: 0, fontSize: 16, fontWeight: 700 } }, monthInfo.name + ' ' + selectedDay),
+                  React.createElement('p', { style: { margin: '4px 0 0 0', opacity: 0.9 } }, DAY_NAMES[new Date(2026, selectedMonth - 1, selectedDay).getDay()])
+                ),
+                React.createElement('div', { style: { padding: 20, maxHeight: 400, overflowY: 'auto' } },
+                  getTasksForDay(selectedDay).map((t, i) =>
+                    React.createElement('div', {
+                      key: i,
+                      style: { padding: '12px', borderBottom: '1px solid ' + T.border, fontSize: 13 }
+                    },
+                      React.createElement('div', { style: { fontWeight: 600, color: CHANNELS[t.channel]?.color || '#333', marginBottom: 4 } },
+                        (CHANNELS[t.channel]?.icon || '') + ' ' + (CHANNELS[t.channel]?.label || t.channel)
+                      ),
+                      React.createElement('p', { style: { margin: 0, lineHeight: 1.4 } }, t.task),
+                      React.createElement('div', { style: { fontSize: 11, color: T.textMuted, marginTop: 4 } },
+                        t.type.toUpperCase() + ' • ' + (t.priority === 'critical' ? '🔴 Critical' : t.priority)
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          ) : (
+            // KPI VIEW
+            React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 } },
+              KPIS.map((kpi, i) =>
+                React.createElement('div', {
+                  key: i,
+                  className: 'card',
+                  style: { padding: 20 }
+                },
+                  React.createElement('div', { style: { fontSize: 13, fontWeight: 600, color: T.textSub, marginBottom: 12 } }, kpi.label),
+                  React.createElement('div', { style: { fontSize: 24, fontWeight: 700, color: T.text, marginBottom: 16 } }, kpi.current),
+                  React.createElement('div', { style: { fontSize: 12, color: T.textMuted } },
+                    'Target: ',
+                    React.createElement('span', { style: { fontWeight: 700, color: phase.color } }, kpi.target)
+                  )
+                )
+              )
+            )
+          )
+        )
+      );
+    }
+
+    // ===== RENDER =====
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        try {
+          const root = ReactDOM.createRoot(document.getElementById('root'));
+          root.render(React.createElement(NationInDashboard));
+        } catch (err) {
+          console.error('Error:', err);
+          document.getElementById('root').innerHTML = '<div style="padding: 40px; color: red;"><h2>Error: ' + err.message + '</h2></div>';
+        }
+      }, 100);
+    });
+  </script>
+</body>
+</html>
